@@ -1,0 +1,38 @@
+name: Build Realme Neo 8 Kernel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+
+      - name: Set up Build Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential flex git libssl-dev libelf-dev clang lld llvm
+
+      - name: Download Google Clang
+        run: |
+          mkdir clang
+          cd clang
+          # Скачиваем эталонный тулчейн Google для Android 16 (ветка r522817)
+          wget https://googlesource.com
+          tar -xf clang-r522817.tar.gz
+
+      - name: Compiling Kernel
+        run: |
+          export PATH=$(pwd)/clang/bin:$PATH
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CLANG_TRIPLE=aarch64-linux-gnu-
+          
+          # Запуск конфигурации (замените gki_defconfig на точное имя вашего конфига, если оно отличается)
+          make O=out gki_defconfig
+          
+          # Запуск сборки на всех доступных ядрах процессора
+          make -j$(nproc) O=out CC=clang
+          
