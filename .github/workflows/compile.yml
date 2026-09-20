@@ -17,11 +17,12 @@ jobs:
 
       - name: Download Google Clang
         run: |
-          mkdir clang
-          cd clang
-          # Скачиваем эталонный тулчейн Google для Android 16 (ветка r522817)
-          wget https://googlesource.com
-          tar -xf clang-r522817.tar.gz
+          A_BASE="https://android."
+          A_PATH="://googlesource.com"
+          FINAL_URL="${A_BASE}${A_PATH}"
+          mkdir clang && cd clang
+          curl -Lo clang.tar.gz "$FINAL_URL"
+          tar -xzf clang.tar.gz && rm -f clang.tar.gz
 
       - name: Compiling Kernel
         run: |
@@ -30,9 +31,6 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CLANG_TRIPLE=aarch64-linux-gnu-
           
-          # Запуск конфигурации (замените gki_defconfig на точное имя вашего конфига, если оно отличается)
           make O=out gki_defconfig
-          
-          # Запуск сборки на всех доступных ядрах процессора
           make -j$(nproc) O=out CC=clang
           
